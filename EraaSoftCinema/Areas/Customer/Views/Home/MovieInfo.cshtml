@@ -1,0 +1,132 @@
+﻿@using EraaSoftCinema.Models.StrongVMs
+@model MovieAllInfo
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>City Cinemas | @Model.movie.title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/css/site.css">
+</head>
+
+<body>
+
+    <!-- HERO HEADER -->
+    <div class="movie-hero" style="padding: 10px">
+        <img src="~/img/Movies/Mimgs/@Model.movie.MainImgUrl" alt="@Model.movie.title" style="object-fit: fill">
+
+        <div class="movie-hero-overlay">
+            <h1>@Model.movie.title</h1>
+
+            <a class="btn btn-danger btn-lg book-btn"
+               asp-controller="Booking"
+               asp-action="Index"
+               asp-route-id="@Model.movie.id">
+                Book Now
+            </a>
+        </div>
+    </div>
+
+    <!-- PRICE -->
+    <div class="movie-price">
+        <span>Ticket Price: <strong>$@Model.movie.Price</strong></span>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="container mt-5">
+        <div class="row">
+
+            <section>
+
+            <!-- MOVIE INFO -->
+            <div class="col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h4>Movie Info</h4>
+                        <hr />
+                        <p>
+                            <strong>Category:</strong>
+                            <span class="badge bg-primary">@Model.CategoryName</span>
+                        </p>
+
+                        <p>
+                            <strong>Language:</strong>
+                            <span class="badge bg-secondary">@Model.LanguageName</span>
+                        </p>
+
+                        <p class="text-muted">
+                            @Model.movie.description
+                        </p>
+                    </div>
+                </div>
+            </div>
+            </section>
+
+            <div style="padding : 30px">
+                @if (Model.movie.MovieSubimgs != null && Model.movie.MovieSubimgs.Any())
+                {
+                    <div class="movie-gallery mb-5">
+                        <h3 class="mb-3">Scenes from the Movie</h3>
+
+                        <div class="row row-cols-2 row-cols-md-4 g-3">
+                            @foreach (var img in Model.movie.MovieSubimgs)
+                            {
+                                <div class="col">
+                                    <div class="gallery-item">
+                                        <img src="~/img/Movies/SubImgs/@img.SubImgUrl"
+                                             alt="@Model.movie.title"
+                                             class="img-fluid rounded shadow-sm">
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+            </div>
+            <!-- MOVIE GALLERY -->
+         
+
+
+            <!-- ACTORS -->
+            <div class="col-md-8" style="padding : 30px">
+                <h3 class="mb-4">Cast & Actors</h3>
+
+                @if (Model.actors != null && Model.actors.Any())
+                {
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+                        @foreach (var actor in Model.actors)
+                        {
+                            <div class="col">
+                                <div class="card h-100 text-center border-0 shadow-sm">
+                                    <div class="p-3">
+                                        <img src="~/img/Actors/@actor.imgUrl"
+                                             class="rounded-circle img-thumbnail"
+                                             style="width:120px;height:120px;object-fit:cover;"
+                                             alt="@actor.name">
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title h6">@actor.name</h5>
+                                        <p class="card-text small text-muted">Actor</p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        No actors found for this movie.
+                    </div>
+                }
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

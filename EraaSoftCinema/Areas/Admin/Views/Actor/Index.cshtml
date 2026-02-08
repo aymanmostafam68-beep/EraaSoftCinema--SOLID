@@ -1,0 +1,182 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+@model ActorVM;
+
+<head>
+    <meta charset="UTF-8">
+    <title>Category Table</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+
+        <!-- Search Section -->
+        <form method="get" asp-action="Index">
+            <div class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <div class="input-group">
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Search Actor..."
+                               name="ActorName"
+                               value="@Context.Request.Query["ActorName"]" />
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </div>
+
+                <div class="col-auto">
+                    <a asp-action="Index" class="btn btn-outline-danger">Reset All</a>
+                </div>
+            </div>
+        </form>
+        <div class="row mb-3">
+            <div class="col-12 d-flex justify-content-end">
+                <a href="/Admin/Actor/Create" class="btn btn-success">
+                    + Add New
+                </a>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Actor Name</th>
+                  
+                    <th>Photo</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Actors)
+                {
+                    <tr>
+                        <td>@item.id</td>
+                        <td>@item.name</td>
+                     
+
+                        <td>@item.imgUrl</td>
+                        <td>
+                            <a href="/Admin/Actor/Edit/@item.id"
+                               class="btn btn-warning btn-sm">
+                                Edit
+                            </a>
+
+
+                            <button formaction="post"
+                                    data-url="@Url.Action("Delete", "Actor", new { area = "Admin" })"
+                                    type="button" data-id="@item.id" class="btn btn-sm btn-danger btn-delete">
+                                Delete
+                            </button>
+
+
+
+
+                        </td>
+                    </tr>
+                }
+
+
+
+            </tbody>
+        </table>
+
+
+
+
+
+        <!-- Pagination -->
+        <nav>
+            <ul class="pagination justify-content-end">
+                <li class="page-item @(Model.CurrentPage == 0 ? "disable" : "")">
+
+                    @if (Model.CurrentPage > 1)
+                    {
+                        <a class="page-link"
+                           href="@(Model.CurrentPage == 1 ? "#" : $"/Admin/Actor/Index?page={Model.CurrentPage - 1}")">
+                            Previous
+                        </a>
+                    }
+
+                </li>
+
+                <!-- Page Numbers -->
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                        <a class="page-link" href="/Admin/Category/Index?page=@i">@i</a>
+                    </li>
+                }
+
+                <!-- Next -->
+                @if (Model.TotalPages > 1)
+                {
+
+                    <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link"
+                           href="@(Model.CurrentPage == Model.TotalPages ? "#" : $"/Admin/Actor/Index?page={Model.CurrentPage + 1}")">
+                            Next
+                        </a>
+                    </li>
+
+                }
+
+
+
+
+            </ul>
+        </nav>
+
+        @*    <div class="datatable-dropdown">
+            <label>
+                <select class="datatable-selector"><option value="5">5</option><option value="10" selected="">10</option><option value="15">15</option><option value="20">20</option><option value="25">25</option></select> entries per page
+            </label>
+        </div> *@
+
+
+
+
+
+
+
+
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.querySelectorAll('.btn-delete').forEach(button => {
+            button.addEventListener('click', function () {
+                const id = this.getAttribute('data-id');
+                            const url = this.dataset.url;
+
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Create a form dynamically to submit the POST request
+                        const form = document.createElement('form');
+                        form.method = 'post';
+                       form.action = `${url}/${id}`;// adjust controller/action
+
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
