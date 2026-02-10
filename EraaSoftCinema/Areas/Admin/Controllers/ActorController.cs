@@ -4,6 +4,7 @@ using EraaSoftCinema.Models;
 using EraaSoftCinema.Models.StrongVMs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace EraaSoftCinema.Areas.Admin.Controllers
 {
@@ -11,10 +12,13 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
     public class ActorController : Controller
     {
         private IRepo<Actor> _repository;//= new Repositories.Repository<Actor>();
+        private readonly IStringLocalizer<LocalizationController> _localizer;
 
-        public ActorController(IRepo<Actor> repository)
+        public ActorController(IRepo<Actor> repository, IStringLocalizer<LocalizationController> localizer)
         {
             _repository = repository;
+            _localizer = localizer;
+
         }
 
         public async Task<IActionResult> Index(string? ActorName, int page = 1)
@@ -100,9 +104,18 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
                     actor.imgUrl = existingActor.imgUrl;
                 }
 
-                _repository.update(actor);
+               await _repository.update(actor);
 
-                await _repository.Comment();
+            }
+            int result = await _repository.Comment();
+            if (result > 0)
+            {
+                TempData["Notification-success"] = _localizer["UpdateActor-success"].Value;
+
+            }
+            else
+            {
+                TempData["Notification-error"] = _localizer["UpdateActor-error"].Value;
             }
             return RedirectToAction(nameof(Index));
 
@@ -128,8 +141,16 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
             actor.imgUrl = newFileName;
 
             await _repository.Create(actor);
-            await _repository.Comment();
+            int result = await _repository.Comment();
+            if (result > 0)
+            {
+                TempData["Notification-success"] = _localizer["AddActor-success"].Value;
 
+            }
+            else
+            {
+                TempData["Notification-error"] = _localizer["AddActor-error"].Value;
+            }
             return RedirectToAction("Index", "Actor");
 
         }
@@ -147,8 +168,16 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
                 System.IO.File.Delete(fullpath);
             }
             _repository.Delete(actor);
-            await _repository.Comment();
+          int result=  await _repository.Comment();
+                if (result > 0)
+                {
+                    TempData["Notification-success"] = _localizer["ActorDelete-success"].Value;
 
+                }
+                else
+                {
+                    TempData["Notification-error"] = _localizer["ActorDelete-error"].Value;
+                }
             return RedirectToAction("Index", "Actor");
 
         }

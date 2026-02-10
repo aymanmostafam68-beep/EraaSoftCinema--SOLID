@@ -22,63 +22,6 @@ namespace EraaSoftCinema.Repositories
 
         }
 
-        //Crud Operations
-        //Create
-
-        public void fileUpload(IFormFile file, string location, out string newFileName,bool replcae=false)
-        {
-
-            if (file != null && file.Length > 0)
-            {
-                var filename = Guid.NewGuid().ToString().Substring(0, 7) + Path.GetExtension(file.FileName);
-
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot","img", location, filename);
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    file.CopyTo(stream);
-                }
-                newFileName = filename;
-            }
-            else
-            {
-             newFileName= "default.png";
-            }
-
-            
-        }
-
-        public void filesUpload(IFormFile[] file, string location, out List<string> newFileNames, bool replcae = false)
-        {
-            newFileNames = new List<string>();
-
-            if (file != null && file.Length > 0)
-            {
-                foreach (var f in file)
-                {
-
-                    var filename = Guid.NewGuid().ToString().Substring(0, length: 7) + Path.GetExtension(f.FileName);
-
-                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", location, filename);
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        f.CopyTo(stream);
-                    }
-
-                    newFileNames.Add(filename);
-                }
-
-
-            }
-            else
-            {
-                newFileNames.Add("default.png");
-            }
-
-
-        }
-
-
-
 
         public async Task Create(T entity)
         {
@@ -141,7 +84,57 @@ namespace EraaSoftCinema.Repositories
             return await query.FirstOrDefaultAsync(filter);
         }
 
+        public void fileUpload(IFormFile file, string location, out string newFileName, bool replcae = false)
+        {
 
+            if (file != null && file.Length > 0)
+            {
+                var filename = Guid.NewGuid().ToString().Substring(0, 7) + Path.GetExtension(file.FileName);
+
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", location, filename);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    file.CopyTo(stream);
+                }
+                newFileName = filename;
+            }
+            else
+            {
+                newFileName = "default.png";
+            }
+
+
+        }
+
+        public void filesUpload(IFormFile[] file, string location, out List<string> newFileNames, bool replcae = false)
+        {
+            newFileNames = new List<string>();
+
+            if (file != null && file.Length > 0)
+            {
+                foreach (var f in file)
+                {
+
+                    var filename = Guid.NewGuid().ToString().Substring(0, length: 7) + Path.GetExtension(f.FileName);
+
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", location, filename);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        f.CopyTo(stream);
+                    }
+
+                    newFileNames.Add(filename);
+                }
+
+
+            }
+            else
+            {
+                newFileNames.Add("default.png");
+            }
+
+
+        }
 
 
     }

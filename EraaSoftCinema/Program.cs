@@ -1,3 +1,9 @@
+using System.Globalization;
+using EraaSoftCinema.Areas.Admin.Controllers;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
+
 namespace EraaSoftCinema
 {
     public class Program
@@ -5,6 +11,7 @@ namespace EraaSoftCinema
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
@@ -15,9 +22,30 @@ namespace EraaSoftCinema
             builder.Services.AddScoped<IRepo<Models.MoviesActors>, Repository<Models.MoviesActors>>();
             builder.Services.AddScoped<IRepo<Models.MovieSubimg>, Repository<Models.MovieSubimg>>();
 
+            builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+            const string defaultCulture = "en";
+            var supportedCultures = new[]
+            {
+            new CultureInfo(defaultCulture),
+            new CultureInfo("en"),
+             new CultureInfo("ar")
+};
+
+            builder.Services.Configure<RequestLocalizationOptions>(options => {
+                options.DefaultRequestCulture = new RequestCulture(defaultCulture);
+                options.SupportedCultures = supportedCultures;
+                options.SupportedUICultures = supportedCultures;
+            });
+
+            builder.Services.AddSession();
+
+
 
 
             var app = builder.Build();
+            app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
+
+
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
@@ -31,6 +59,7 @@ namespace EraaSoftCinema
             app.UseRouting();
 
             app.UseAuthorization();
+            app.UseSession();
 
             app.MapStaticAssets();
             app.MapControllerRoute(

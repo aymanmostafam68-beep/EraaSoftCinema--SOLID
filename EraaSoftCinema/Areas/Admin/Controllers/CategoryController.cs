@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 using EraaSoftCinema.Areas.Admin.Models;
 using EraaSoftCinema.Models;
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace EraaSoftCinema.Areas.Admin.Controllers
 {
@@ -12,11 +12,14 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
     public class CategoryController : Controller
     {
         private IRepo<Category> _repository; //= new Repository<Category>();
+        private readonly IStringLocalizer<LocalizationController> _localizer;
 
-        public CategoryController(IRepo<Category> repository)
+        public CategoryController(IRepo<Category> repository, IStringLocalizer<LocalizationController> localizer)
         {
             _repository = repository;
+            _localizer = localizer;
         }
+
         public async Task<IActionResult> Index(string? CategoryName, int page = 1)
         {
             var _categories = await _repository.GetAll(tracked: false);
@@ -53,6 +56,7 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
         [ActionName("AddCategory")]
         public IActionResult AddCategory()
         {
+
             return View(new Category());
         }
 
@@ -69,14 +73,28 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
 
             if (!ModelState.IsValid)
             {
-                return View(category);
-            }
 
+
+                return View(category);
+
+            }
+            
             _repository.fileUpload(file, "Category", out string newFileName); 
             category.imgUrl = newFileName;
 
            await _repository.Create(category);
-           await _repository.Comment();
+            int result = await _repository.Comment();
+            if(result> 0)
+            {
+                TempData["Notification-success"] = _localizer["AddCategory-success"].Value;
+
+            }
+            else
+            {
+                TempData["Notification-error"] = _localizer["AddCategory-error"].Value;
+            }
+
+
 
             return RedirectToAction("Index", "Category");
         }
@@ -104,12 +122,16 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
                 }
               
 
-                if (!ModelState.IsValid) return View(category);
+                if (!ModelState.IsValid)
+                    TempData["Notification-error"] = _localizer["UpdateCategory-error"].Value;
+
+                return View(category);
+
 
             }
 
-          
-                var existingCategory = await _repository.GetOne(c => c.id == category.id, tracked: false);
+
+            var existingCategory = await _repository.GetOne(c => c.id == category.id, tracked: false);
 
 
 
@@ -134,16 +156,33 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
                 category.imgUrl = existingCategory.imgUrl;
             }
             
-               _repository.update(category);
+             await  _repository.update(category);
 
-               await _repository.Comment();
-                return RedirectToAction(nameof(Index));
+            int result = await _repository.Comment();
+            if (result> 0)
+            {
+                TempData["Notification-success"] = _localizer["UpdateCategory-success"].Value;
+
+
+            }
+            else
+            {
+                TempData["Notification-error"] = _localizer["UpdateCategory-error"].Value;
+
+            }
+
+
+
+
+            return RedirectToAction(nameof(Index));
 
         }
 
         [HttpPost]
         public async Task<IActionResult> Delete([FromRoute]int id)
         {
+        
+
             var category =await _repository.GetOne(c => c.id == id, tracked: false);
             if (category is null)  return NotFound();
 
@@ -153,9 +192,17 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
                 {
                     System.IO.File.Delete(fullpath);
                 }
-             _repository.Delete(category);
-          await  _repository.Comment();
-      
+             await _repository.Delete(category);
+       int result =   await  _repository.Comment();
+            if (result > 0)
+            {
+
+                TempData["Notification-success"] = _localizer["DeleteCategory-success"].Value;
+            } else
+            {
+                TempData["Notification-error"] = _localizer["DeleteCategory-error"].Value;
+            }
+
             return RedirectToAction("Index", "Category");
 
         }

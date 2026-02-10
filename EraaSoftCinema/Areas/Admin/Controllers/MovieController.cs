@@ -5,6 +5,7 @@ using EraaSoftCinema.Models.StrongVMs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Build.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Newtonsoft.Json.Linq;
 
 namespace EraaSoftCinema.Areas.Admin.Controllers
@@ -19,8 +20,10 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
         private IRepo<Actor> _actors;//= new Repositories.Repository<Actor>();
         private IRepo<MoviesActors> _MoviesActors;//= new Repositories.Repository<MoviesActors>();
         private IRepo<MovieSubimg> _MovieSubimg;// = new Repositories.Repository<MovieSubimg>();
+        private readonly IStringLocalizer<LocalizationController> _localizer;
 
-        public MovieController(IRepo<Movie> repository, IRepo<Category> categories, IRepo<Language> languages, IRepo<Actor> actors, IRepo<MoviesActors> moviesActors, IRepo<MovieSubimg> movieSubimg)
+
+        public MovieController(IRepo<Movie> repository, IRepo<Category> categories, IRepo<Language> languages, IRepo<Actor> actors, IRepo<MoviesActors> moviesActors, IRepo<MovieSubimg> movieSubimg, IStringLocalizer<LocalizationController> localizer)
         {
             _repository = repository;
             _categories = categories;
@@ -28,6 +31,8 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
             _actors = actors;
             _MoviesActors = moviesActors;
             _MovieSubimg = movieSubimg;
+            _localizer = localizer;
+
         }
 
         public async Task<IActionResult> Index(string? MovieName, int page = 1)
@@ -184,7 +189,7 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
                     }
 
                 }
-                _MovieSubimg.DeleteRange(movie1.MovieSubimgs);
+             await   _MovieSubimg.DeleteRange(movie1.MovieSubimgs);
 
 
                 _repository.filesUpload(Subfiles, location: "Movies\\Subimgs", newFileNames: out List<string> newFileNames);
@@ -198,7 +203,17 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
                     };
                   await  _MovieSubimg.Create(movieSubimg);
                 }
-                await _MovieSubimg.Comment();
+                int result = await _MovieSubimg.Comment();
+                if (result > 0)
+                {
+                    TempData["Notification-success"] = _localizer["UpdateMovie-success"].Value;
+
+                }
+                else
+                {
+                    TempData["Notification-error"] = _localizer["UpdateMovie-error"].Value;
+                }
+
 
 
 
@@ -312,7 +327,18 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
 
 
 
-            await _MoviesActors.Comment();
+            int result = await _MoviesActors.Comment();
+            if (result > 0)
+            {
+                TempData["Notification-success"] = _localizer["AddMovie-success"].Value;
+
+            }
+            else
+            {
+                TempData["Notification-error"] = _localizer["AddMovie-error"].Value;
+            }
+
+
 
 
             return RedirectToAction(actionName: "Index", "Movie");
@@ -328,7 +354,16 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
        
             if (movieInfo != null) {
                await _repository.Delete(movieInfo);
-               await _repository.Comment();
+            }
+            int result = await _repository.Comment();
+            if (result > 0)
+            {
+                TempData["Notification-success"] = _localizer["DeleteMovie-success"].Value;
+
+            }
+            else
+            {
+                TempData["Notification-error"] = _localizer["DeleteMovie-error"].Value;
             }
 
             return RedirectToAction("Index", "Movie");
