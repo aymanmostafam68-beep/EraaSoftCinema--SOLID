@@ -103,6 +103,7 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(MovieAllInfo model, IFormFile? Mainfile, IFormFile[]? Subfiles, int[]? ActorsIds)
         {
+            bool flag = false;  
             if (!ModelState.IsValid)
             {
 
@@ -151,8 +152,9 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
                                          .ToList()?? new List<int>();
             if (oldactorMovies.Any())
             {
-                _MoviesActors.DeleteRange( movie1.actorMovies);
+               await _MoviesActors.DeleteRange( movie1.actorMovies);
                 await _repository.Comment();
+                flag= true;
             }
 
 
@@ -169,7 +171,9 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
                     });
                 }
 
-           await _MoviesActors.Comment();
+         await _MoviesActors.Comment();
+            flag = true;
+
 
 
 
@@ -202,24 +206,26 @@ namespace EraaSoftCinema.Areas.Admin.Controllers
                         SubImgUrl = newFileNames[i]
                     };
                   await  _MovieSubimg.Create(movieSubimg);
-                }
-                int result = await _MovieSubimg.Comment();
-                if (result > 0)
-                {
-                    TempData["Notification-success"] = _localizer["UpdateMovie-success"].Value;
+                    flag = true;
 
                 }
-                else
-                {
-                    TempData["Notification-error"] = _localizer["UpdateMovie-error"].Value;
-                }
+                int result = await _MovieSubimg.Comment();
+            
 
 
 
 
             }
 
+            if (flag)
+            {
+                TempData["Notification-success"] = _localizer["UpdateMovie-success"].Value;
 
+            }
+            else
+            {
+                TempData["Notification-error"] = _localizer["UpdateMovie-error"].Value;
+            }
 
             return RedirectToAction(actionName: "Index", "Movie");
 

@@ -1,4 +1,4 @@
-﻿namespace EraaSoftCinema.Utilities
+﻿namespace EraaSoftCinema
 {
     public class LocalizationController
     {
